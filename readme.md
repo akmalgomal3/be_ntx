@@ -1,28 +1,123 @@
-# Instruksi khusus dalam mengerjakan ujian teknis Back-End:
+# BE NTX
 
-0. Tanyakan semua pertanyaan di bawah ini ke ChatGPT sebelum mengerjakan sendiri. Lakukan komparasi jawabanmu dengan jawaban ChatGPT.
+This repository contains the backend service for the BE NTX project. It is designed to handle various API requests for survey statistics, user authentication, survey data, and more, using Redis caching on port 6379.
 
-1. Lakukan Refactor function 'refactoreMe1' dan 'refactoreMe2' agar function tersebut lebih mudah dibaca. Pada proses Refactor wajib memakai query native (raw query). Dataset disediakan di folder files.
+## Prerequisites
 
-2. Buatkan endpoint berbasis websocket untuk melakukan fetch data dari api https://livethreatmap.radware.com/api/map/attacks?limit=10 dengan ketentuan fetch 3 menit sekali. Tulis code-mu di callmeWebSocket function.
+- [Node.js](https://nodejs.org/)
+- [Redis](https://redis.io/) running on port 6379
+- [Postman](https://www.postman.com/) or similar tool for API testing
 
-3. Simpan data dari https://livethreatmap.radware.com/api/map/attacks?limit=10 ke database postgres, buatkan 1 endpoint sederhana untuk mendapatkan angka jumlah "destinationCountry" yang diserang dan "sourcecountry" yang menyerang. Tulis code-mu di getData function menggunakan query native (raw query). Sesuaikan hasil respon seperti di bawah ini:
+## Setup
 
-```
-{
-  success:true,
-  statusCode:200,
-  data:{
-    label:["Indonesia","Singapore","China"]
-    total:[200,200,200]
-  }
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/yourusername/BE-NTX.git
+    cd BE-NTX
+    ```
+
+2. Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3. Start the Redis server:
+
+   Ensure Redis is running on port 6379. You can start Redis using:
+
+    ```bash
+    redis-server
+    ```
+
+4. Start the application:
+
+    ```bash
+    npm start
+    ```
+
+## API Endpoints
+
+### 1. Survey Stats
+
+**Endpoint:** `GET /api/survey-stats`  
+**Description:** Fetch survey statistics.  
+**Headers:**  
+`x-access-token` - JWT Token.  
+**Example Request:**
+```http
+GET http://localhost:6543/api/survey-stats
+Headers: {
+  "x-access-token": "<JWT_TOKEN>"
 }
 ```
 
-4. Implementasikan redis catching pada saat melakukan fetch endpoint yang telah dibuat sebelumnya pada nomor 3.
+### 2. Login
 
-5. Buatkan middleware autentikasi jwt untuk melakukan proteksi API dan middleware yang berfungsi membatasi endpoint lain berdasarkan role user. Contoh: User A memiliki token valid, tetapi User A tidak memiliki role valid, sehingga User A tidak dapat membuka beberapa endpoint.
+**Endpoint:** `POST /api/login`  
+**Description:** Login to get a JWT token.  
+**Request Body:**
+```json
+{
+  "id": 1,
+  "digits": "DFA",
+  "company": "NTX"
+}
+```
+**Example Request:**
+```http
+POST http://localhost:6543/api/login
+Body: {
+  "id": 1,
+  "digits": "DFA",
+  "company": "NTX"
+}
+```
 
-6. Buatkan unit test untuk melakukan test endpoint untuk memastikan endpoint tersebut berjalan dengan baik.
+### 3. Survey Stats
 
-7. Push hasil test ke github.
+**Endpoint:** `POST /api/survey`  
+**Description:** Submit survey data.  
+**Headers:**  
+`x-access-token` - JWT Token.  
+**Request Body:**
+```json
+{
+  "userId": 2,
+  "values": [76, 24, 36, 44, 53],
+  "id": 1
+}
+```
+**Example Request:**
+```http
+POST http://localhost:6543/api/survey
+Headers: {
+  "x-access-token": "<JWT_TOKEN>"
+}
+Body: {
+  "userId": 2,
+  "values": [76, 24, 36, 44, 53],
+  "id": 1
+}
+```
+
+### 4. Data
+
+**Endpoint:** `GET /api/data`  
+**Description:** Fetch data; accessible only to users with `workType` WFO.  
+**Headers:**  
+`x-access-token` - JWT Token.  
+**Example Request:**
+```http
+GET http://localhost:6543/api/data
+Headers: {
+  "x-access-token": "<JWT_TOKEN>"
+}
+```
+
+### 5. WebSocket Data
+
+**Endpoint:** `ws://localhost:6543/api/data`
+**Description:** WebSocket API to receive data from the API URL every 3 minutes.
+Example Connection: Connect to the WebSocket using a client tool with the URL `ws://localhost:6543/api/data`. 
